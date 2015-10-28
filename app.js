@@ -36,8 +36,13 @@ document.onkeydown = function (evt) {
                 activePosition[0]++;
             break;
         case 38:
-            if (canMove(activeFigure, [activePosition[0], activePosition[1] + 1]))
-                ++activePosition[1];
+            if (canMove(activeFigure, [activePosition[0], activePosition[1] + 1])) {
+                var newFigure = getFigure(activeShape, getNextOrientation(activeOrientation));
+                if (!canMove(newFigure, activePosition))
+                    return;
+                activeFigure = newFigure;
+                activeOrientation = getNextOrientation(activeOrientation);
+            }
             break;
         default:
             console.log(activePosition[1]);
@@ -79,13 +84,7 @@ function canMove(figure, position) {
         return false;
     return true;
 }
-function rotateCW(figure, orientation) {
-    return figure;
-}
-function rotateCCW(figure, orientation) {
-    return figure;
-}
-function getNextPosition(orientation) {
+function getNextOrientation(orientation) {
     switch (orientation) {
         case 2 /* Down */: return 3 /* Left */;
         case 3 /* Left */: return 0 /* Up */;
@@ -98,7 +97,7 @@ function getFigure(figure, orientation) {
         case 1 /* BackEl */:
             switch (orientation) {
                 case 0 /* Up */:
-                    return [[0, 2], [0, 3], [1, 1], [2, 1]];
+                    return [[0, 2], [0, 3], [1, 2], [2, 2]];
                 case 1 /* Right */:
                     return [[1, 1], [1, 2], [1, 3], [2, 3]];
                 case 2 /* Down */:
@@ -164,7 +163,7 @@ function getFigure(figure, orientation) {
                 case 2 /* Down */:
                     return [[1, 2], [2, 2], [3, 2], [2, 1]];
                 case 3 /* Left */:
-                    return [[2, 1], [2, 2], [2, 2], [1, 2]];
+                    return [[2, 1], [2, 2], [2, 3], [1, 2]];
             }
             break;
         case 3 /* Stick */:
@@ -172,11 +171,11 @@ function getFigure(figure, orientation) {
                 case 0 /* Up */:
                     return [[1, 0], [1, 1], [1, 2], [1, 3]];
                 case 1 /* Right */:
-                    return [[0, 1], [1, 1], [1, 1], [3, 1]];
+                    return [[0, 1], [1, 1], [2, 1], [3, 1]];
                 case 2 /* Down */:
                     return [[1, 0], [1, 1], [1, 2], [1, 3]];
                 case 3 /* Left */:
-                    return [[0, 1], [1, 1], [1, 1], [3, 1]];
+                    return [[0, 1], [1, 1], [2, 1], [3, 1]];
             }
             break;
     }
@@ -192,6 +191,9 @@ var tick = 1000;
 var droppedCells = [];
 var activeFigure = null;
 var nextFigure = null;
+var nextShape;
+var activeShape;
+var activeOrientation;
 var activePosition = [5, 10];
 function getRandomArbitrary(min, max) {
     return Math.round(Math.random() * (max - min) + min);
@@ -201,26 +203,18 @@ function getFigureOnTheField(figure, position) {
         return [item[0] + position[0], item[1] + position[1]];
     });
 }
-droppedCells.push([0, 0]);
-droppedCells.push([1, 0]);
-droppedCells.push([2, 0]);
-droppedCells.push([3, 0]);
-droppedCells.push([4, 0]);
-droppedCells.push([5, 0]);
-droppedCells.push([6, 0]);
-droppedCells.push([7, 0]);
-droppedCells.push([7, 1]);
-droppedCells.push([9, 0]);
-droppedCells.push([9, 1]);
-droppedCells.push([9, 2]);
 newFigure();
 function newFigure() {
     activePosition = [4, 18];
     if (nextFigure == null) {
-        nextFigure = getFigure(getRandomArbitrary(0, 6), 0 /* Up */);
+        nextShape = getRandomArbitrary(0, 6);
+        nextFigure = getFigure(nextShape, 0 /* Up */);
     }
     activeFigure = nextFigure;
-    nextFigure = getFigure(getRandomArbitrary(0, 6), 0 /* Up */);
+    activeShape = nextShape;
+    activeOrientation = 0 /* Up */;
+    nextShape = getRandomArbitrary(0, 6);
+    nextFigure = getFigure(nextShape, 0 /* Up */);
 }
 setInterval(function () {
     var positionLower = [activePosition[0], activePosition[1] - 1];
@@ -231,6 +225,8 @@ setInterval(function () {
     else {
         activePosition = [activePosition[0], activePosition[1] - 1];
     }
+    if (!canMove(activeFigure, activePosition))
+        droppedCells = [];
     drawCanvas();
 }, tick);
 //# sourceMappingURL=app.js.map

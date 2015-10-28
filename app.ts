@@ -39,9 +39,14 @@ document.onkeydown = (evt)=> {
                 activePosition[0]++;
             break;
 
-        case 38:
+        case 38: //Rotate
             if (canMove(activeFigure, [activePosition[0], activePosition[1]+1]))
-                ++activePosition[1];
+            {
+                var newFigure = getFigure(activeShape, getNextOrientation(activeOrientation))
+                if (!canMove(newFigure, activePosition)) return
+                activeFigure = newFigure
+                activeOrientation = getNextOrientation(activeOrientation)
+            }
             break;
 
 
@@ -89,15 +94,9 @@ function canMove(figure: Array< [number, number]>, position: [number, number]) :
     return true
 }
 
-function rotateCW (figure: Array< [number, number]>, orientation: Orientation) :  Array< [number, number]> {
-    return figure;
-}
 
-function rotateCCW (figure: Array< [number, number]>, orientation: Orientation) : Array< [number, number]> {
-    return figure;
-}
 
-function getNextPosition(orientation: Orientation){
+function getNextOrientation(orientation: Orientation){
 
     switch (orientation){
         case Orientation.Down: return Orientation.Left
@@ -114,7 +113,7 @@ function  getFigure(figure: Figure, orientation: Orientation ): Array<[number, n
             switch (orientation){
 
                 case Orientation.Up:
-                    return [[0,2],[0,3],[1,1],[2,1]];
+                    return [[0,2],[0,3],[1,2],[2,2]];
                 case Orientation.Right:
                     return [[1,1],[1,2],[1,3],[2,3]];
 
@@ -203,7 +202,7 @@ function  getFigure(figure: Figure, orientation: Orientation ): Array<[number, n
                     return [[1,2],[2,2],[3,2],[2,1]];
 
                 case Orientation.Left:
-                    return [[2,1],[2,2],[2,2],[1,2]];
+                    return [[2,1],[2,2],[2,3],[1,2]];
 
             }
             break;
@@ -215,13 +214,13 @@ function  getFigure(figure: Figure, orientation: Orientation ): Array<[number, n
                     return [[1,0],[1,1],[1,2],[1,3]];
 
                 case Orientation.Right:
-                    return [[0,1],[1,1],[1,1],[3,1]];
+                    return [[0,1],[1,1],[2,1],[3,1]];
 
                 case Orientation.Down:
                     return [[1,0],[1,1],[1,2],[1,3]];
 
                 case Orientation.Left:
-                    return [[0,1],[1,1],[1,1],[3,1]];
+                    return [[0,1],[1,1],[2,1],[3,1]];
 
             }
             break;
@@ -252,6 +251,12 @@ var activeFigure:  Array< [number, number]> = null
 
 var nextFigure:  Array< [number, number]> = null
 
+var nextShape : Figure
+
+var activeShape: Figure
+
+var activeOrientation : Orientation
+
 var activePosition : [number, number] = [5,10]
 
 function getRandomArbitrary(min, max) {
@@ -264,38 +269,29 @@ function getFigureOnTheField(figure: Array<[number, number]>, position: [number,
     });
 }
 
-    droppedCells.push([0, 0])
-    droppedCells.push([1, 0])
-    droppedCells.push([2, 0])
-    droppedCells.push([3, 0])
-    droppedCells.push([4, 0])
-    droppedCells.push([5, 0])
-    droppedCells.push([6, 0])
-    droppedCells.push([7, 0])
-
-    droppedCells.push([7, 1])
-    droppedCells.push([9, 0])
-    droppedCells.push([9, 1])
-    droppedCells.push([9, 2])
-
       newFigure()
 
 function newFigure() :void {
+
     activePosition = [4, 18]
 
     if (nextFigure == null){
-
-        nextFigure = getFigure(
-            <Figure> getRandomArbitrary(0,6),
+        nextShape = <Figure> getRandomArbitrary(0,6)
+        nextFigure = getFigure(nextShape,
             Orientation.Up
         )
     }
 
     activeFigure = nextFigure
+    activeShape = nextShape
+    activeOrientation = Orientation.Up
 
+    nextShape = <Figure> getRandomArbitrary(0,6)
     nextFigure = getFigure(
-        <Figure> getRandomArbitrary(0,6),
+        nextShape,
         Orientation.Up)
+
+
 }
 
 setInterval(()=>{
@@ -308,5 +304,8 @@ setInterval(()=>{
     else{
         activePosition = [activePosition[0], activePosition[1]-1]
     }
+
+    if (!canMove(activeFigure, activePosition)) droppedCells = []
+
     drawCanvas()
 },tick);
