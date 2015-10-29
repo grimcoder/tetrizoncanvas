@@ -238,6 +238,51 @@ function getFigure(figure:BoardFigure):Array<[number, number]> {
 
 }
 
+function getRandomArbitrary(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
+}
+
+function getFigureOnTheField(figure:Array<[number, number]>, position:[number, number]):Array<[number, number]> {
+    return figure.map((item)=> {
+        return <[number, number]>[item[0] + position[0], item[1] + position[1]]
+    });
+}
+
+function newFigure():void {
+
+    activePosition = [4, 18];
+
+    if (nextBoardFigure == null) {
+        nextBoardFigure = new BoardFigure();
+        nextBoardFigure.figure = <Figure> getRandomArbitrary(0, 6);
+        nextBoardFigure.orientation = Orientation.Up
+    }
+
+    activeBoardFigure = nextBoardFigure;
+    nextBoardFigure = new BoardFigure();
+    nextBoardFigure.figure = <Figure> getRandomArbitrary(0, 6);
+    nextBoardFigure.orientation = Orientation.Up
+}
+
+function removeFullLines(){
+    for(var i : number = 0; i<heigth; i++){
+
+        if (droppedCells.filter((item, index)=>{
+                return item[1] == i
+            }).length == width){
+
+            droppedCells = droppedCells.filter((item, index)=>{
+                return item[1] != i
+            });
+
+            droppedCells.map((item)=>{
+                if (item[1] > i) item[1]--
+            });
+            i--
+        }
+    }
+}
+
 document.write("<canvas id='mainCanvas' width='400px' height='800px '  style='border:1px solid #000000;'></canvas>");
 
 var canvas = <HTMLCanvasElement> document.getElementById("mainCanvas");
@@ -260,48 +305,19 @@ var activeBoardFigure:BoardFigure = null;
 
 var activePosition:[number, number] = [5, 10];
 
-function getRandomArbitrary(min, max) {
-    return Math.round(Math.random() * (max - min) + min);
-}
-
-function getFigureOnTheField(figure:Array<[number, number]>, position:[number, number]):Array<[number, number]> {
-    return figure.map((item)=> {
-        return <[number, number]>[item[0] + position[0], item[1] + position[1]]
-    });
-}
-
 newFigure();
 
-function newFigure():void {
-
-    activePosition = [4, 18];
-
-    if (nextBoardFigure == null) {
-        nextBoardFigure = new BoardFigure();
-        nextBoardFigure.figure = <Figure> getRandomArbitrary(0, 6);
-        nextBoardFigure.orientation = Orientation.Up
-    }
-
-    activeBoardFigure = nextBoardFigure;
-
-    nextBoardFigure = new BoardFigure();
-    nextBoardFigure.figure = <Figure> getRandomArbitrary(0, 6);
-    nextBoardFigure.orientation = Orientation.Up
-
-
-}
-
 setInterval(()=> {
+
     var positionLower = <[number, number]>[activePosition[0], activePosition[1] - 1];
     if (!canMove(activeBoardFigure, positionLower)) {
         droppedCells = droppedCells.concat(getFigureOnTheField(getFigure(activeBoardFigure), activePosition));
+        removeFullLines();
         newFigure()
     }
     else {
         activePosition = [activePosition[0], activePosition[1] - 1]
     }
-
     if (!canMove(activeBoardFigure, activePosition)) droppedCells = [];
-
     drawCanvas()
 }, tick);

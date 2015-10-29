@@ -186,17 +186,6 @@ function getFigure(figure) {
     }
     return [[0, 1], [1, 1], [1, 1], [3, 1]];
 }
-document.write("<canvas id='mainCanvas' width='400px' height='800px '  style='border:1px solid #000000;'></canvas>");
-var canvas = document.getElementById("mainCanvas");
-var context = canvas.getContext("2d");
-var cellSize = 40;
-var width = 10;
-var heigth = 20;
-var tick = 1000;
-var droppedCells = [];
-var nextBoardFigure = null;
-var activeBoardFigure = null;
-var activePosition = [5, 10];
 function getRandomArbitrary(min, max) {
     return Math.round(Math.random() * (max - min) + min);
 }
@@ -205,7 +194,6 @@ function getFigureOnTheField(figure, position) {
         return [item[0] + position[0], item[1] + position[1]];
     });
 }
-newFigure();
 function newFigure() {
     activePosition = [4, 18];
     if (nextBoardFigure == null) {
@@ -218,10 +206,39 @@ function newFigure() {
     nextBoardFigure.figure = getRandomArbitrary(0, 6);
     nextBoardFigure.orientation = 0 /* Up */;
 }
+function removeFullLines() {
+    for (var i = 0; i < heigth; i++) {
+        if (droppedCells.filter(function (item, index) {
+            return item[1] == i;
+        }).length == width) {
+            droppedCells = droppedCells.filter(function (item, index) {
+                return item[1] != i;
+            });
+            droppedCells.map(function (item) {
+                if (item[1] > i)
+                    item[1]--;
+            });
+            i--;
+        }
+    }
+}
+document.write("<canvas id='mainCanvas' width='400px' height='800px '  style='border:1px solid #000000;'></canvas>");
+var canvas = document.getElementById("mainCanvas");
+var context = canvas.getContext("2d");
+var cellSize = 40;
+var width = 10;
+var heigth = 20;
+var tick = 1000;
+var droppedCells = [];
+var nextBoardFigure = null;
+var activeBoardFigure = null;
+var activePosition = [5, 10];
+newFigure();
 setInterval(function () {
     var positionLower = [activePosition[0], activePosition[1] - 1];
     if (!canMove(activeBoardFigure, positionLower)) {
         droppedCells = droppedCells.concat(getFigureOnTheField(getFigure(activeBoardFigure), activePosition));
+        removeFullLines();
         newFigure();
     }
     else {
